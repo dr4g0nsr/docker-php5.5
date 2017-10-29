@@ -1,4 +1,3 @@
-#FROM debian:jessie
 FROM ubuntu:16.04
 
 # persistent / runtime deps
@@ -22,7 +21,7 @@ RUN apt-get update && apt-get install -y \
 		apt-utils \
 	--no-install-recommends && rm -r /var/lib/apt/lists/*
 
-ENV PHP_INI_DIR /usr/local/etc/php
+ENV PHP_INI_DIR /usr/local/etc
 RUN mkdir -p $PHP_INI_DIR/conf.d
 RUN mkdir -p $PHP_INI_DIR/pool.d
 
@@ -98,10 +97,6 @@ RUN set -ex \
 		} | tee php-fpm.conf; \
 	fi
 
-COPY fpm/php-fpm.conf /usr/local/etc/php-fpm.d/php-fpm.conf
-COPY conf.d/custom.ini /usr/local/etc/php.ini
-COPY www.conf /usr/local/etc/pool.d/www.conf
-
 # Additional ext
 RUN apt-get update && apt-get install -y \
         libfreetype6-dev \
@@ -110,12 +105,16 @@ RUN apt-get update && apt-get install -y \
         libpng12-dev \
 		mcrypt \
 		libcurl4-openssl-dev \
+		libfcgi0ldbl \
+		nano \
     && docker-php-ext-install -j$(nproc) iconv mcrypt \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install -j$(nproc) gd
 
-# Install nano
-RUN apt-get update && apt-get install -y nano
+COPY fpm/php-fpm.conf /usr/local/etc/php-fpm.d/php-fpm.conf
+COPY php.ini /usr/local/etc/php.ini
+COPY www.conf /usr/local/etc/pool.d/www.conf
+COPY test-fpm.sh /usr/local/bin/test-fpm.sh
 
 EXPOSE 9000
 
