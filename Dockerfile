@@ -67,6 +67,8 @@ RUN cd /usr/src/php \
 		--with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
 		--enable-mbstring \
 		--enable-mysqlnd \
+		--with-mysqli=mysqlnd \
+		--with-pdo-mysql=mysqlnd \
 		--with-curl \
 		--with-libedit \
 		--with-openssl \
