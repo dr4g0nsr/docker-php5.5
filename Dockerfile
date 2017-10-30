@@ -68,6 +68,7 @@ RUN cd /usr/src/php \
 		--enable-mbstring \
 		--enable-mysqlnd \
 		--with-mysqli=mysqlnd \
+		--with-mysql=mysqlnd \
 		--with-pdo-mysql=mysqlnd \
 		--with-curl \
 		--with-libedit \
