@@ -121,7 +121,7 @@ COPY test-fpm.sh /usr/local/bin/test-fpm.sh
 
 EXPOSE 9000
 
-#VOLUME /usr/local/etc/pool.d/
+VOLUME /usr/local/etc
 VOLUME /var/www/html
 
 CMD ["php-fpm"]
