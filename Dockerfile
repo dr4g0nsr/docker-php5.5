@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y \
 		libxml2 \
 		xz-utils \
 		apt-utils \
+		iputils-* \
+		net-tools \
+		wget \
 	--no-install-recommends && rm -r /var/lib/apt/lists/*
 
 ENV PHP_INI_DIR /usr/local/etc
@@ -34,6 +37,7 @@ ENV GPG_KEYS 0B96609E270F565C13292B24C13C70B87267B52D 0BD78B5F97500D450838F95DFE
 ENV PHP_VERSION 5.5.38
 ENV PHP_FILENAME php-5.5.38.tar.xz
 ENV PHP_SHA256 cb527c44b48343c8557fe2446464ff1d4695155a95601083e5d1f175df95580f
+ENV PHP_EXTENSIONS gd,mysqlnd,mbstring,exif,opcache,sockets,curl,iconv,mcrypt
 
 RUN set -xe \
 	&& cd /usr/src \
@@ -67,6 +71,9 @@ RUN cd /usr/src/php \
 		--with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
 		--enable-mbstring \
 		--enable-mysqlnd \
+		--enable-sockets \
+		--enable-exif \
+		--enable-opcache \
 		--with-mysqli=mysqlnd \
 		--with-mysql=mysqlnd \
 		--with-pdo-mysql=mysqlnd \
@@ -109,17 +116,34 @@ RUN apt-get update && apt-get install -y \
 		mcrypt \
 		libcurl4-openssl-dev \
 		libfcgi0ldbl \
-		nano \
-    && docker-php-ext-install -j$(nproc) iconv mcrypt \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd
+		nano
+
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-install -j$(nproc) iconv mcrypt gd
 
 COPY fpm/php-fpm.conf /usr/local/etc/php-fpm.d/php-fpm.conf
 COPY php.ini /usr/local/etc/php.ini
 COPY www.conf /usr/local/etc/pool.d/www.conf
 COPY test-fpm.sh /usr/local/bin/test-fpm.sh
 
+# Download and install xdebug
+RUN cd /usr/src &&  wget https://xdebug.org/files/xdebug-2.5.5.tgz && \
+tar xvfz xdebug-2.5.5.tgz && \
+rm xdebug-2.5.5.tgz && \
+cd /usr/src/xdebug-2.5.5 && \
+phpize && \
+./configure && \
+make -j"${nproc}" && \
+make install && \
+rm -rf /usr/src/xdebug-2.5.5 && \
+echo "zend_extension=xdebug.so" > /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
+echo "xdebug.remote_enable = 1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
+echo "xdebug.remote_host = 172.18.0.1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
+
+RUN rm /usr/src/*
+
 EXPOSE 9000
+EXPOSE 8000
 
 VOLUME /usr/local/etc
 VOLUME /var/www/html
