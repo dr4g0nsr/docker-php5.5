@@ -136,8 +136,8 @@ phpize && \
 make -j"${nproc}" && \
 make install && \
 rm -rf /usr/src/xdebug-2.5.5 && \
-echo "zend_extension=xdebug.so" > /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
-echo "xdebug.remote_enable = 1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
+echo "zend_extension=xdebug.so" > /usr/local/etc/conf.d/docker-php-ext-xdebug.ini && \
+echo "xdebug.remote_enable = 1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini && \
 echo "xdebug.remote_host = 172.18.0.1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
 
 RUN rm /usr/src/*
