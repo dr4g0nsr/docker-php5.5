@@ -140,7 +140,28 @@ echo "zend_extension=xdebug.so" > /usr/local/etc/conf.d/docker-php-ext-xdebug.in
 echo "xdebug.remote_enable = 1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini && \
 echo "xdebug.remote_host = 172.18.0.1" >> /usr/local/etc/conf.d/docker-php-ext-xdebug.ini
 
-RUN rm /usr/src/*
+RUN pecl install memcache
+
+RUN apt install -y libmemcached-dev
+
+RUN cd /usr/src && \
+mkdir memcached && \
+cd memcached && \
+pecl_memcached_ver="2.2.0" && \
+pecl download memcached-${pecl_memcached_ver} && \
+tar xzvf memcached-${pecl_memcached_ver}.tgz && \
+cd memcached-${pecl_memcached_ver}/ && \
+phpize && \
+./configure && \
+make -j"${nproc}" && \
+make install
+
+RUN echo "extension=memcache.so" >> /usr/local/etc/conf.d/docker-php-ext-memcache.ini
+RUN echo "extension=memcached.so" >> /usr/local/etc/conf.d/docker-php-ext-memcached.ini
+
+#RUN rm -rf /usr/src/memcached
+
+#RUN rm /usr/src/*
 
 EXPOSE 9000
 EXPOSE 8000
